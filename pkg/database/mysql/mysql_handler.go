@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/jim-nnamdi/bashfans/pkg/model"
+	"github.com/jim-nnamdi/jinx/pkg/model"
 )
 
 var (

@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/go-sql-driver/mysql"
-	database "github.com/jim-nnamdi/bashfans/pkg/database/mysql"
-	"github.com/jim-nnamdi/bashfans/pkg/handlers"
-	"github.com/jim-nnamdi/bashfans/pkg/server"
+	database "github.com/jim-nnamdi/jinx/pkg/database/mysql"
+	"github.com/jim-nnamdi/jinx/pkg/handlers"
+	"github.com/jim-nnamdi/jinx/pkg/server"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 )

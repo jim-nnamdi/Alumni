@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/jim-nnamdi/bashfans/pkg/model"
+	"github.com/jim-nnamdi/jinx/pkg/model"
 )
 
 //go:generate mockgen -destination=mocks/mock_database.go -package=mocks

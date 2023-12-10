@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/jim-nnamdi/bashfans/pkg/database/mysql"
+	"github.com/jim-nnamdi/jinx/pkg/database/mysql"
 	"go.uber.org/zap"
 )
 

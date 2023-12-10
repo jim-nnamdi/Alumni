@@ -1,4 +1,4 @@
-module github.com/jim-nnamdi/bashfans
+module github.com/jim-nnamdi/jinx
 
 go 1.19
 

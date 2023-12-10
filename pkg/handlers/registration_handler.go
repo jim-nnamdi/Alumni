@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jim-nnamdi/bashfans/pkg/database/mysql"
+	"github.com/jim-nnamdi/jinx/pkg/database/mysql"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )

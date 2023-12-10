@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jim-nnamdi/bashfans/pkg/command"
+	"github.com/jim-nnamdi/jinx/pkg/command"
 	"github.com/urfave/cli/v2"
 )
 
