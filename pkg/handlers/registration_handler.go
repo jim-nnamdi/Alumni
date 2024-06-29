@@ -73,18 +73,22 @@ func validateEmail(email string) (bool, error) {
 
 func (handler *registerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var (
-		username = r.FormValue("username")
-		password = r.FormValue("password")
-		email    = r.FormValue("email")
-		country  = r.FormValue("country")
-		phone    = r.FormValue("phone")
-		dataresp = map[string]interface{}{}
+		username        = r.FormValue("username")
+		password        = r.FormValue("password")
+		email           = r.FormValue("email")
+		gradyear        = r.FormValue("grad_year")
+		phone           = r.FormValue("phone")
+		degree          = r.FormValue("degree")
+		currentjob      = r.FormValue("current_job")
+		linkedinprofile = r.FormValue("linkedin_profile")
+		twitterprofile  = r.FormValue("twitter_profile")
+		dataresp        = map[string]interface{}{}
 	)
 
 	// there should be a frontend validation for all fields
 	// the backend would assist to catch empty fields if the
 	// frontend validation is compromised.
-	if username == "" || password == "" || country == "" || phone == "" || email == "" {
+	if username == "" || password == "" || degree == "" || phone == "" || email == "" {
 		handler.logger.Error("some fields are empty")
 		dataresp["err"] = "some fields are empty"
 		w.Write(GetSuccessResponse(dataresp, registerTTL))
@@ -122,7 +126,7 @@ func (handler *registerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		handler.logger.Error("email was malformed!", zap.Error(err))
 		return
 	}
-	createUser, err := handler.mysqlclient.CreateUser(r.Context(), username, hashed_password, email, country, phone, newsessionkey, 0.0)
+	createUser, err := handler.mysqlclient.CreateUser(r.Context(), username, hashed_password, email, degree, gradyear, currentjob, phone, newsessionkey, "", linkedinprofile, twitterprofile)
 	if err != nil || !createUser {
 		dataresp["err"] = "cannot register user, try again"
 		handler.logger.Error("could not create user", zap.Any("error", err))

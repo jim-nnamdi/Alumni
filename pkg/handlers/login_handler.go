@@ -45,14 +45,18 @@ func (handler *loginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				loginres["err"] = "email or password incorrect"
 				handler.logger.Error("email or password incorrect", zap.Any("login response", "email or password incorrect"))
 				w.Write(GetSuccessResponse(loginres["err"], loginTTL))
+				return
 			}
 			if loginnow != nil {
 				loginres["username"] = loginnow.Username
 				loginres["email"] = loginnow.Email
 				loginres["phone"] = loginnow.Phone
-				loginres["country"] = loginnow.Country
-				loginres["session_key"] = loginnow.SessionKey
-				loginres["wallet_balance"] = loginnow.WalletBalance
+				loginres["degree"] = loginnow.Degree
+				loginres["grad_year"] = loginnow.GradYear
+				loginres["current_job"] = loginnow.CurrentJob
+				loginres["profile_picture"] = loginnow.ProfilePicture
+				loginres["linkedin_profile"] = loginnow.LinkedinProfile
+				loginres["twitter_profile"] = loginnow.TwitterProfile
 				w.Write(GetSuccessResponse(loginres, loginTTL))
 			}
 		}

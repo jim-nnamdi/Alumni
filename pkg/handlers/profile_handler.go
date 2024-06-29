@@ -37,6 +37,9 @@ func (handler *profileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	profileres["email"] = userInfo.Email
 	profileres["phone"] = userInfo.Phone
 	profileres["session_key"] = userInfo.SessionKey
-	profileres["wallet_balance"] = userInfo.WalletBalance
+	profileres["degree"] = userInfo.Degree
+	profileres["current_job"] = userInfo.CurrentJob
+	profileres["linkedin_profile"] = userInfo.LinkedinProfile
+	profileres["twitter_profile"] = userInfo.TwitterProfile
 	w.Write(GetSuccessResponse(profileres, profileTTL))
 }

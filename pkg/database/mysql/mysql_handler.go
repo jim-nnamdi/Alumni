@@ -62,7 +62,7 @@ func NewMySQLDatabase(db *sql.DB) (*mysqlDatabase, error) {
 }
 
 func (db *mysqlDatabase) CreateUser(ctx context.Context, username string, password string, email string, degree string, gradyear string, currentjob string, phone string, sessionkey string, profilepicture string, linkedinprofile string, twitterprofile string) (bool, error) {
-	userQuery, err := db.createUser.ExecContext(ctx, username, password, email, degree, gradyear, currentjob, phone, sessionkey)
+	userQuery, err := db.createUser.ExecContext(ctx, username, password, email, degree, gradyear, currentjob, phone, sessionkey, profilepicture, linkedinprofile, twitterprofile)
 	if err != nil {
 		return false, err
 	}
@@ -79,7 +79,7 @@ func (db *mysqlDatabase) CreateUser(ctx context.Context, username string, passwo
 func (db *mysqlDatabase) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	user := &model.User{}
 	getUserByEmail := db.getUserByEmail.QueryRowContext(ctx, email)
-	err := getUserByEmail.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Degree, &user.GradYear, &user.CurrentJob, &user.Phone, &user.SessionKey)
+	err := getUserByEmail.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Degree, &user.GradYear, &user.CurrentJob, &user.Phone, &user.SessionKey, &user.ProfilePicture, &user.LinkedinProfile, &user.TwitterProfile)
 	if err != nil {
 		log.Println("get user by email", err)
 		return nil, err
@@ -90,7 +90,7 @@ func (db *mysqlDatabase) GetUserByEmail(ctx context.Context, email string) (*mod
 func (db *mysqlDatabase) CheckUser(ctx context.Context, email string, password string) (*model.User, error) {
 	user := &model.User{}
 	getUserByEmail := db.checkUser.QueryRowContext(ctx, email, password)
-	err := getUserByEmail.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Country, &user.Phone, &user.SessionKey, &user.WalletBalance)
+	err := getUserByEmail.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Degree, &user.GradYear, &user.CurrentJob, &user.Phone, &user.SessionKey, &user.ProfilePicture, &user.LinkedinProfile, &user.TwitterProfile)
 	if err != nil {
 		log.Println("checkuser", err)
 		return nil, err
@@ -101,7 +101,7 @@ func (db *mysqlDatabase) CheckUser(ctx context.Context, email string, password s
 func (db *mysqlDatabase) GetBySessionKey(ctx context.Context, sessionkey string) (*model.User, error) {
 	user := &model.User{}
 	getBySessionKey := db.getBySessionKey.QueryRowContext(ctx, sessionkey)
-	err := getBySessionKey.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Country, &user.Phone, &user.SessionKey, &user.WalletBalance)
+	err := getBySessionKey.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Degree, &user.GradYear, &user.CurrentJob, &user.Phone, &user.SessionKey, &user.ProfilePicture, &user.LinkedinProfile, &user.TwitterProfile)
 	if err != nil {
 		return nil, err
 	}

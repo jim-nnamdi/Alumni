@@ -14,7 +14,7 @@ type Database interface {
 	io.Closer
 
 	/* user interaction queries */
-	CreateUser(ctx context.Context, username string, password string, email string, country string, phone string, sessionkey string, walletbalance float64) (bool, error)
+	CreateUser(ctx context.Context, username string, password string, email string, degree string, gradyear string, currentjob string, phone string, sessionkey string, profilepicture string, linkedinprofile string, twitterprofile string) (bool, error)
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
 	CheckUser(ctx context.Context, email string, password string) (*model.User, error)
 	GetBySessionKey(ctx context.Context, sessionkey string) (*model.User, error)
