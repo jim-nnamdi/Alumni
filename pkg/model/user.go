@@ -6,16 +6,20 @@ import (
 )
 
 type User struct {
-	Id            int       `json:"id"`
-	Username      string    `json:"username"`
-	Password      string    `json:"password"`
-	Email         string    `json:"email"`
-	Country       string    `json:"country"`
-	Phone         string    `json:"phone"`
-	SessionKey    string    `json:"session_key"`
-	WalletBalance string    `json:"wallet_balance"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	Id              int       `json:"id"`
+	Username        string    `json:"username"`
+	Password        string    `json:"password"`
+	Email           string    `json:"email"`
+	Degree          string    `json:"degree"`
+	GradYear        string    `json:"grad_year"`
+	CurrentJob      string    `json:"currentjob"`
+	Phone           string    `json:"phone"`
+	SessionKey      string    `json:"session_key"`
+	ProfilePicture  string    `json:"profilepicture"`
+	LinkedinProfile string    `json:"linkedinprofile"`
+	TwitterProfile  string    `json:"twitterprofile"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }
 
 // key is an unexported type for keys defined in this package.

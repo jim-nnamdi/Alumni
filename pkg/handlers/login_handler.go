@@ -32,7 +32,7 @@ func (handler *loginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	checkuser, err := handler.mysqlclient.GetUserByEmail(r.Context(), email)
 	if err != nil {
 		loginres["err"] = "user does not exist"
-		handler.logger.Debug("user does not exist", zap.Any("checkuser", err))
+		handler.logger.Error("user does not exist", zap.Any("checkuser", err))
 		w.Write(GetSuccessResponse(loginres["err"], loginTTL))
 		return
 	}
@@ -43,7 +43,7 @@ func (handler *loginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			loginnow, err := handler.mysqlclient.CheckUser(r.Context(), email, checkuser.Password)
 			if err != nil {
 				loginres["err"] = "email or password incorrect"
-				handler.logger.Debug("email or password incorrect", zap.Any("login response", "email or password incorrect"))
+				handler.logger.Error("email or password incorrect", zap.Any("login response", "email or password incorrect"))
 				w.Write(GetSuccessResponse(loginres["err"], loginTTL))
 			}
 			if loginnow != nil {

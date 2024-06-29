@@ -27,7 +27,7 @@ type mysqlDatabase struct {
 
 func NewMySQLDatabase(db *sql.DB) (*mysqlDatabase, error) {
 	var (
-		createUser           = "INSERT INTO users(username, password, email, country, phone, session_key, wallet_balance) VALUES(?,?,?,?,?,?,?);"
+		createUser           = "INSERT INTO users(username, password, email, degree, grad_year,current_job, phone, session_key,profile_picture,linkedin_profile,twitter_profile) VALUES(?,?,?,?,?,?,?,?,?,?,?);"
 		checkUser            = "SELECT * FROM users where email = ? AND password=?;"
 		getUserByEmail       = "SELECT * FROM users where email = ?;"
 		getBySessionKey      = "SELECT * FROM users where session_key=?;"
@@ -61,8 +61,8 @@ func NewMySQLDatabase(db *sql.DB) (*mysqlDatabase, error) {
 	return database, nil
 }
 
-func (db *mysqlDatabase) CreateUser(ctx context.Context, username string, password string, email string, country string, phone string, sessionkey string, walletbalance float64) (bool, error) {
-	userQuery, err := db.createUser.ExecContext(ctx, username, password, email, country, phone, sessionkey, walletbalance)
+func (db *mysqlDatabase) CreateUser(ctx context.Context, username string, password string, email string, degree string, gradyear string, currentjob string, phone string, sessionkey string, profilepicture string, linkedinprofile string, twitterprofile string) (bool, error) {
+	userQuery, err := db.createUser.ExecContext(ctx, username, password, email, degree, gradyear, currentjob, phone, sessionkey)
 	if err != nil {
 		return false, err
 	}
@@ -79,7 +79,7 @@ func (db *mysqlDatabase) CreateUser(ctx context.Context, username string, passwo
 func (db *mysqlDatabase) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	user := &model.User{}
 	getUserByEmail := db.getUserByEmail.QueryRowContext(ctx, email)
-	err := getUserByEmail.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Country, &user.Phone, &user.SessionKey, &user.WalletBalance)
+	err := getUserByEmail.Scan(&user.Id, &user.Username, &user.Password, &user.Email, &user.Degree, &user.GradYear, &user.CurrentJob, &user.Phone, &user.SessionKey)
 	if err != nil {
 		log.Println("get user by email", err)
 		return nil, err
