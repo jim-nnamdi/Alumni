@@ -10,16 +10,16 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:  "bfans-server",
-		Usage: "start a server for bfans",
+		Name:  "Alumni network server",
+		Usage: "networking platform for alumnis",
 		Commands: []*cli.Command{
 			command.StartCommand(),
 		},
 		Version: "v0.1.5",
 		Authors: []*cli.Author{
 			{
-				Name:  "Jim Samuel Nnamdi",
-				Email: "jsamuel@bfans.net",
+				Name:  "csc group",
+				Email: "csc432@lasu.com",
 			},
 		},
 	}
