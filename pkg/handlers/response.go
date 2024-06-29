@@ -55,7 +55,6 @@ func createSessionKey(patronID string, t time.Time) string {
 		hash = md5.New()
 		err  error
 	)
-
 	if _, err = io.WriteString(hash, patronID); err != nil {
 		return err.Error()
 	}
