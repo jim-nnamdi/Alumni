@@ -57,12 +57,14 @@ func (smw *SessionMiddleware) Middleware(next http.Handler) http.Handler {
 			return
 		}
 		uInfo.Username = getBySession.Username
-		uInfo.Country = getBySession.Country
+		uInfo.Degree = getBySession.Degree
 		uInfo.Email = getBySession.Email
 		uInfo.Phone = getBySession.Phone
 		uInfo.SessionKey = getBySession.SessionKey
 		uInfo.Id = getBySession.Id
-		uInfo.WalletBalance = getBySession.WalletBalance
+		uInfo.ProfilePicture = getBySession.ProfilePicture
+		uInfo.LinkedinProfile = getBySession.LinkedinProfile
+		uInfo.TwitterProfile = getBySession.TwitterProfile
 		ctx := model.NewContext(r.Context(), uInfo)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
