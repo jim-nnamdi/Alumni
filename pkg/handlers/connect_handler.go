@@ -12,6 +12,9 @@ type Connection interface {
 var _ Connection = &connectionStruct{}
 
 type connectionStruct struct {
+	Requester string `json:"requester"`
+	Accepter  string `json:"accepter"`
+	Connected bool   `json:"connected"`
 }
 
 func (connstruct *connectionStruct) InitiateConnectionRequest(ctx context.Context, requester string, accepter string) (bool, error) {

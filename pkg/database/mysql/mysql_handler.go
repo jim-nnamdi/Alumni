@@ -23,6 +23,9 @@ type mysqlDatabase struct {
 	getUserPortfolios    *sql.Stmt
 	getUserTransactions  *sql.Stmt
 	createNewTransaction *sql.Stmt
+	addNewForumPost      *sql.Stmt
+	getSingleForumPost   *sql.Stmt
+	getAllForums         *sql.Stmt
 }
 
 func NewMySQLDatabase(db *sql.DB) (*mysqlDatabase, error) {
@@ -34,6 +37,9 @@ func NewMySQLDatabase(db *sql.DB) (*mysqlDatabase, error) {
 		getUserPortfolios    = "SELECT * FROM portfolio_order WHERE `user_email` = ?;"
 		getUserTransactions  = "SELECT * FROM transactions WHERE `user_email` = ?;"
 		createNewTransaction = "INSERT INTO transactions(from_user_id,from_user_email, to_user_id, to_user_email,type,created_at,updated_at,amount,user_email) VALUES(?,?,?,?,?,?,?,?);"
+		addNewForumPost      = "INSERT INTO forums(title, description, author, slug, created_at, updated_at) VALUES (?,?,?,?,?,?)"
+		getSingleForumPost   = "SELECT * FROM forums WHERE `slug` = ?;"
+		getAllForums         = "SELECT * FROM forums"
 		database             = &mysqlDatabase{}
 		err                  error
 	)
@@ -56,6 +62,15 @@ func NewMySQLDatabase(db *sql.DB) (*mysqlDatabase, error) {
 		return nil, err
 	}
 	if database.createNewTransaction, err = db.Prepare(createNewTransaction); err != nil {
+		return nil, err
+	}
+	if database.addNewForumPost, err = db.Prepare(addNewForumPost); err != nil {
+		return nil, err
+	}
+	if database.getSingleForumPost, err = db.Prepare(getSingleForumPost); err != nil {
+		return nil, err
+	}
+	if database.getAllForums, err = db.Prepare(getAllForums); err != nil {
 		return nil, err
 	}
 	return database, nil
@@ -157,6 +172,48 @@ func (db *mysqlDatabase) CreateNewTransaction(ctx context.Context, from_user int
 	return true, nil
 }
 
+func (db *mysqlDatabase) AddNewForumPost(ctx context.Context, title string, description string, author string, slug string, created_at time.Time, updated_at time.Time) (bool, error) {
+	createNewForum, err := db.addNewForumPost.ExecContext(ctx, title, description, author, slug, created_at, updated_at)
+	if err != nil {
+		return false, err
+	}
+	lastInsert, err := createNewForum.LastInsertId()
+	if err != nil {
+		return false, err
+	}
+	if lastInsert <= 0 {
+		return false, err
+	}
+	return true, nil
+}
+
+func (db *mysqlDatabase) GetSingleForumPost(ctx context.Context, slug string) (*model.Forum, error) {
+	forum := &model.Forum{}
+	getForumBySlug := db.getSingleForumPost.QueryRowContext(ctx, slug)
+	err := getForumBySlug.Scan(&forum.Id, &forum.Title, &forum.Description, &forum.Author, &forum.Slug, &forum.CreatedAt, &forum.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return forum, nil
+}
+
+func (db *mysqlDatabase) GetAllForums(ctx context.Context) (*[]model.Forum, error) {
+	var forum = model.Forum{}
+	var forums = []model.Forum{}
+	getForums, err := db.getAllForums.QueryContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for getForums.Next() {
+		err := getForums.Scan(&forum.Id, &forum.Title, &forum.Description, &forum.Author, &forum.Slug, &forum.CreatedAt, &forum.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+	}
+	forums = append(forums, forum)
+	return &forums, nil
+}
+
 func (db *mysqlDatabase) Close() error {
 	db.createUser.Close()
 	db.checkUser.Close()
@@ -165,5 +222,7 @@ func (db *mysqlDatabase) Close() error {
 	db.getUserPortfolios.Close()
 	db.getUserTransactions.Close()
 	db.createNewTransaction.Close()
+	db.addNewForumPost.Close()
+	db.getSingleForumPost.Close()
 	return nil
 }

@@ -15,7 +15,7 @@ type User struct {
 	CurrentJob      string    `json:"currentjob"`
 	Phone           string    `json:"phone"`
 	SessionKey      string    `json:"session_key"`
-	ProfilePicture  string    `json:"profilepicture"`
+	ProfilePicture  string    `json:"profilepicture,omitempty"`
 	LinkedinProfile string    `json:"linkedinprofile"`
 	TwitterProfile  string    `json:"twitterprofile"`
 	CreatedAt       time.Time `json:"created_at"`
