@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -28,9 +29,12 @@ func (fs *forumStruct) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		title       = r.FormValue("title")
 		description = r.FormValue("description")
 		author      = r.FormValue("author")
+		afp         = map[string]string{}
 	)
 	if title == "" || description == "" || author == "" {
 		fs.Log.Printf("'%s'\n", "title | description | author is empty")
+		afp["error"] = "empty title or description or author"
+		w.Write(GetErrorResponseBytes(afp, 30, fmt.Errorf("'%s'", "empty title description or author")))
 		return
 	}
 
@@ -50,6 +54,8 @@ func (fs *forumStruct) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	add_new_forum_post, err := fs.Db.AddNewForumPost(r.Context(), title, description, author, _slug, time.Now(), time.Now())
 	if err != nil {
 		fs.Log.Printf("'%s'\n", err)
+		afp["error"] = err.Error()
+		w.Write(GetErrorResponseBytes(afp, 30, err))
 		return
 	}
 

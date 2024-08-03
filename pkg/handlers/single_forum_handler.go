@@ -24,6 +24,7 @@ func NewSForumStruct(log *log.Logger, Db mysql.Database) *sforumStruct {
 func (fs *sforumStruct) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var (
 		slug = r.FormValue("slug")
+		sfp  = map[string]string{}
 	)
 	if slug == "" {
 		fs.Log.Printf("'%s'\n", "slug is empty")
@@ -33,6 +34,8 @@ func (fs *sforumStruct) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	get_single_forum_post, err := fs.Db.GetSingleForumPost(r.Context(), slug)
 	if err != nil {
 		fs.Log.Printf("'%s'\n", err)
+		sfp["error"] = err.Error()
+		w.Write(GetErrorResponseBytes(sfp, 30, err))
 		return
 	}
 
@@ -46,7 +49,8 @@ func (fs *sforumStruct) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		forum_resp["updated_at"] = get_single_forum_post.UpdatedAt
 		w.Write(GetSuccessResponse(forum_resp, 30))
 	} else {
-		w.Write(GetSuccessResponse([]struct{}{}, 30))
+		sfp["error"] = "no post data"
+		w.Write(GetSuccessResponse(sfp, 30))
 	}
 
 }
