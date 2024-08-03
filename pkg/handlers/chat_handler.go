@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -32,17 +33,38 @@ func (cs *ichatStruct) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		cs.Log.Printf("'%s'\n", "not authenticated")
 		cs.Log.Printf("'Email: %s'\n", current_user.Email)
+		model_invalid_sess := map[string]string{}
+		model_invalid_sess["error"] = "failed to get user"
+		model_invalid_sess["db_error"] = "authentication failed"
+		w.Write(GetErrorResponseBytes(model_invalid_sess, 30, fmt.Errorf("'%s'", "auth again")))
 		return
 	}
 	recv_user, err := cs.DB.GetUserByEmail(r.Context(), recipient)
 	if err != nil {
 		cs.Log.Printf("'%s'\n", err)
 		cs.Log.Printf("'%s'\n", "check if recipient exists")
+		failed_retrieval := map[string]string{}
+		failed_retrieval["error"] = "failed to get user"
+		failed_retrieval["db_error"] = err.Error()
+		w.Write(GetErrorResponseBytes(failed_retrieval, 30, fmt.Errorf("'%s'", err.Error())))
+		return
+	}
+	msg_valid := len(message)
+	if msg_valid > 20 {
+		cs.Log.Printf("'%s'\n", "max message threshold")
+		cs.Log.Printf("'%s'\n", message)
+		msg_resp := map[string]string{}
+		msg_resp["error"] = "max message threshold"
+		w.Write(GetErrorResponseBytes(msg_resp, 30, fmt.Errorf("'%s'", "error sending message")))
 		return
 	}
 	send_chat, err := cs.DB.SendMessage(r.Context(), current_user.Id, recv_user.Id, message, time.Now(), time.Now())
 	if err != nil {
 		cs.Log.Printf("'%s'\n", "could not send message to recipient")
+		nilc_resp := map[string]string{}
+		nilc_resp["error"] = "error sending message"
+		nilc_resp["db_error"] = err.Error()
+		w.Write(GetErrorResponseBytes(nilc_resp, 30, err))
 		return
 	}
 	if send_chat {
