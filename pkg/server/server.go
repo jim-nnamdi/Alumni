@@ -9,10 +9,15 @@ import (
 
 type GracefulShutdownServer struct {
 	HTTPListenAddr  string
-	RegisterHandler http.Handler
-	LoginHandler    http.Handler
-	ProfileHandler  http.Handler
+	RegisterHandler http.Handler // register
+	LoginHandler    http.Handler // login
+	ProfileHandler  http.Handler // profile
 	HomeHandler     http.Handler
+
+	AddForumHandler    http.Handler // add forum post
+	AllForumHandler    http.Handler // get all posts
+	SingleForumHandler http.Handler // get one post
+	ChatHandler        http.Handler // chat a user
 
 	httpServer     *http.Server
 	WriteTimeout   time.Duration
@@ -23,7 +28,13 @@ type GracefulShutdownServer struct {
 
 func (server *GracefulShutdownServer) getRouter() *mux.Router {
 	router := mux.NewRouter()
-
+	router.Handle("/login", server.LoginHandler)
+	router.Handle("/register", server.RegisterHandler)
+	router.Handle("/profile", server.ProfileHandler)
+	router.Handle("/forum", server.AllForumHandler)
+	router.Handle("/forum-post", server.SingleForumHandler)
+	router.Handle("/add-forum-post", server.AddForumHandler)
+	router.Handle("/chat", server.ChatHandler)
 	router.SkipClean(true)
 	return router
 }

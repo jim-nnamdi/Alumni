@@ -9,18 +9,21 @@ import (
 	"github.com/jim-nnamdi/jinx/pkg/database/mysql"
 )
 
-type IForum interface {
-	ServeHttp(w http.ResponseWriter, r *http.Request)
-}
-
-var _ IForum = &forumStruct{}
+var _ http.Handler = &forumStruct{}
 
 type forumStruct struct {
-	Log log.Logger
+	Log *log.Logger
 	Db  mysql.Database
 }
 
-func (fs *forumStruct) ServeHttp(w http.ResponseWriter, r *http.Request) {
+func NewForumStruct(log *log.Logger, Db mysql.Database) *forumStruct {
+	return &forumStruct{
+		Log: log,
+		Db:  Db,
+	}
+}
+
+func (fs *forumStruct) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var (
 		title       = r.FormValue("title")
 		description = r.FormValue("description")

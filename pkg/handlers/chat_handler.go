@@ -9,18 +9,21 @@ import (
 	"github.com/jim-nnamdi/jinx/pkg/model"
 )
 
-type IChat interface {
-	ServeHttp(w http.ResponseWriter, r *http.Request)
-}
-
-var _ IChat = &ichatStruct{}
+var _ http.Handler = &ichatStruct{}
 
 type ichatStruct struct {
-	Log log.Logger
+	Log *log.Logger
 	DB  mysql.Database
 }
 
-func (cs *ichatStruct) ServeHttp(w http.ResponseWriter, r *http.Request) {
+func NewChat(log *log.Logger, Db mysql.Database) *ichatStruct {
+	return &ichatStruct{
+		Log: log,
+		DB:  Db,
+	}
+}
+
+func (cs *ichatStruct) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var (
 		recipient = r.FormValue("recv_email")
 		message   = r.FormValue("message")

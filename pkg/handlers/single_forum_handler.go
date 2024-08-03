@@ -7,18 +7,21 @@ import (
 	"github.com/jim-nnamdi/jinx/pkg/database/mysql"
 )
 
-type SForum interface {
-	ServeHttp(w http.ResponseWriter, r *http.Request)
-}
-
-var _ SForum = &sforumStruct{}
+var _ http.Handler = &sforumStruct{}
 
 type sforumStruct struct {
-	Log log.Logger
+	Log *log.Logger
 	Db  mysql.Database
 }
 
-func (fs *sforumStruct) ServeHttp(w http.ResponseWriter, r *http.Request) {
+func NewSForumStruct(log *log.Logger, Db mysql.Database) *sforumStruct {
+	return &sforumStruct{
+		Log: log,
+		Db:  Db,
+	}
+}
+
+func (fs *sforumStruct) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var (
 		slug = r.FormValue("slug")
 	)

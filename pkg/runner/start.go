@@ -3,6 +3,7 @@ package runner
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/go-sql-driver/mysql"
 	database "github.com/jim-nnamdi/jinx/pkg/database/mysql"
@@ -50,6 +51,7 @@ func (runner *StartRunner) Run(c *cli.Context) error {
 	}
 
 	logger.Sync()
+	alog := log.Default()
 	databaseConfig := &mysql.Config{
 		User:                 runner.MySQLDatabaseUser,
 		Passwd:               runner.MySQLDatabasePassword,
@@ -68,11 +70,15 @@ func (runner *StartRunner) Run(c *cli.Context) error {
 		return fmt.Errorf("unable to create MySQL database client: %s", err.Error())
 	}
 	server := &server.GracefulShutdownServer{
-		HTTPListenAddr:  runner.ListenAddr,
-		RegisterHandler: handlers.NewRegisterHandler(logger, mysqlDatabaseClient),
-		LoginHandler:    handlers.NewLoginHandler(logger, mysqlDatabaseClient),
-		ProfileHandler:  handlers.NewProfileHandler(logger, mysqlDatabaseClient),
-		HomeHandler:     handlers.NewHomeHandler(),
+		HTTPListenAddr:     runner.ListenAddr,
+		RegisterHandler:    handlers.NewRegisterHandler(logger, mysqlDatabaseClient),
+		LoginHandler:       handlers.NewLoginHandler(logger, mysqlDatabaseClient),
+		ProfileHandler:     handlers.NewProfileHandler(logger, mysqlDatabaseClient),
+		HomeHandler:        handlers.NewHomeHandler(),
+		AddForumHandler:    handlers.NewForumStruct(alog, mysqlDatabaseClient),
+		AllForumHandler:    handlers.NewAForumStruct(alog, mysqlDatabaseClient),
+		SingleForumHandler: handlers.NewSForumStruct(alog, mysqlDatabaseClient),
+		ChatHandler:        handlers.NewChat(alog, mysqlDatabaseClient),
 	}
 	server.Start()
 	return nil
