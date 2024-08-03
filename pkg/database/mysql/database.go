@@ -26,4 +26,5 @@ type Database interface {
 	AddNewForumPost(ctx context.Context, title string, description string, author string, slug string, created_at time.Time, updated_at time.Time) (bool, error)
 	GetSingleForumPost(ctx context.Context, slug string) (*model.Forum, error)
 	GetAllForums(ctx context.Context) (*[]model.Forum, error)
+	SendMessage(ctx context.Context, senderId int, receiverId int, message string, createdAt time.Time, updatedAt time.Time) (bool, error)
 }

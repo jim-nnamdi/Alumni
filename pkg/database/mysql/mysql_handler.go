@@ -26,6 +26,7 @@ type mysqlDatabase struct {
 	addNewForumPost      *sql.Stmt
 	getSingleForumPost   *sql.Stmt
 	getAllForums         *sql.Stmt
+	sendMessage          *sql.Stmt
 }
 
 func NewMySQLDatabase(db *sql.DB) (*mysqlDatabase, error) {
@@ -40,6 +41,7 @@ func NewMySQLDatabase(db *sql.DB) (*mysqlDatabase, error) {
 		addNewForumPost      = "INSERT INTO forums(title, description, author, slug, created_at, updated_at) VALUES (?,?,?,?,?,?)"
 		getSingleForumPost   = "SELECT * FROM forums WHERE `slug` = ?;"
 		getAllForums         = "SELECT * FROM forums"
+		sendMessage          = "INSERT INTO chat_messages (sender, recipient, message, created_at,updated_at) VALUES (?,?,?,?,?)"
 		database             = &mysqlDatabase{}
 		err                  error
 	)
@@ -71,6 +73,9 @@ func NewMySQLDatabase(db *sql.DB) (*mysqlDatabase, error) {
 		return nil, err
 	}
 	if database.getAllForums, err = db.Prepare(getAllForums); err != nil {
+		return nil, err
+	}
+	if database.sendMessage, err = db.Prepare(sendMessage); err != nil {
 		return nil, err
 	}
 	return database, nil
@@ -178,6 +183,21 @@ func (db *mysqlDatabase) AddNewForumPost(ctx context.Context, title string, desc
 		return false, err
 	}
 	lastInsert, err := createNewForum.LastInsertId()
+	if err != nil {
+		return false, err
+	}
+	if lastInsert <= 0 {
+		return false, err
+	}
+	return true, nil
+}
+
+func (db *mysqlDatabase) SendMessage(ctx context.Context, senderId int, receiverId int, message string, createdAt time.Time, updatedAt time.Time) (bool, error) {
+	sendmessage, err := db.sendMessage.ExecContext(ctx, senderId, receiverId, message, createdAt, updatedAt)
+	if err != nil {
+		return false, err
+	}
+	lastInsert, err := sendmessage.LastInsertId()
 	if err != nil {
 		return false, err
 	}
