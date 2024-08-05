@@ -1,10 +1,15 @@
 package server
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/jim-nnamdi/jinx/pkg/database/mysql"
+	"github.com/jim-nnamdi/jinx/pkg/middleware"
+	"go.uber.org/zap"
 )
 
 type GracefulShutdownServer struct {
@@ -24,22 +29,29 @@ type GracefulShutdownServer struct {
 	ReadTimeout    time.Duration
 	IdleTimeout    time.Duration
 	HandlerTimeout time.Duration
+	Logger         *zap.Logger
+	Mysqlclient    mysql.Database
 }
 
 func (server *GracefulShutdownServer) getRouter() *mux.Router {
+	// Apply middleware to specific routes
 	router := mux.NewRouter()
-	router.Handle("/login", server.LoginHandler)
-	router.Handle("/register", server.RegisterHandler)
-	router.Handle("/profile", server.ProfileHandler)
-	router.Handle("/forum", server.AllForumHandler)
-	router.Handle("/forum-post", server.SingleForumHandler)
-	router.Handle("/add-forum-post", server.AddForumHandler)
-	router.Handle("/chat", server.ChatHandler)
+	router.Handle("/login", server.LoginHandler).Methods(http.MethodPost)
+	router.Handle("/register", server.RegisterHandler).Methods((http.MethodPost))
+
+	// Wrap profile and forum routes with session middleware
+	sessionMiddleware := middleware.NewSessionMiddleware(server.Logger, server.Mysqlclient)
+	router.Handle("/profile", sessionMiddleware.Middleware(server.ProfileHandler)).Methods(http.MethodGet)
+	router.Handle("/forum", sessionMiddleware.Middleware(server.AllForumHandler)).Methods(http.MethodGet)
+	router.Handle("/forum-post", sessionMiddleware.Middleware(server.SingleForumHandler)).Methods(http.MethodGet)
+	router.Handle("/add-forum-post", sessionMiddleware.Middleware(server.AddForumHandler)).Methods(http.MethodPost)
+	router.Handle("/chat", sessionMiddleware.Middleware(server.ChatHandler)).Methods(http.MethodPost)
 	router.SkipClean(true)
 	return router
 }
 
 func (server *GracefulShutdownServer) Start() {
+	logger, _ := zap.NewDevelopment()
 	router := server.getRouter()
 	server.httpServer = &http.Server{
 		Addr:         server.HTTPListenAddr,
@@ -48,5 +60,8 @@ func (server *GracefulShutdownServer) Start() {
 		IdleTimeout:  server.IdleTimeout,
 		Handler:      router,
 	}
-	server.httpServer.ListenAndServe()
+	logger.Sugar().Info(fmt.Sprintf("listening and serving on %s", server.HTTPListenAddr))
+	if err := server.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatal("server failed to start", zap.Error(err))
+	}
 }

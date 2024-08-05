@@ -58,7 +58,7 @@ func (cs *ichatStruct) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Write(GetErrorResponseBytes(msg_resp, 30, fmt.Errorf("'%s'", "error sending message")))
 		return
 	}
-	send_chat, err := cs.DB.SendMessage(r.Context(), current_user.Id, recv_user.Id, message, time.Now(), time.Now())
+	send_chat, err := cs.DB.SendMessage(r.Context(), current_user.Id, recv_user.Id, message)
 	if err != nil {
 		cs.Log.Printf("'%s'\n", "could not send message to recipient")
 		nilc_resp := map[string]string{}

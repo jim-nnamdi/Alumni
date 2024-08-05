@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"io"
 	"log"
-	"time"
 
 	"github.com/jim-nnamdi/jinx/pkg/model"
 )
@@ -35,13 +34,13 @@ func NewMySQLDatabase(db *sql.DB) (*mysqlDatabase, error) {
 		checkUser            = "SELECT * FROM users where email = ? AND password=?;"
 		getUserByEmail       = "SELECT * FROM users where email = ?;"
 		getBySessionKey      = "SELECT * FROM users where session_key=?;"
-		getUserPortfolios    = "SELECT * FROM portfolio_order WHERE `user_email` = ?;"
+		getUserPortfolios    = "SELECT * FROM portfolio_orders WHERE `user_email` = ?;"
 		getUserTransactions  = "SELECT * FROM transactions WHERE `user_email` = ?;"
-		createNewTransaction = "INSERT INTO transactions(from_user_id,from_user_email, to_user_id, to_user_email,type,created_at,updated_at,amount,user_email) VALUES(?,?,?,?,?,?,?,?);"
-		addNewForumPost      = "INSERT INTO forums(title, description, author, slug, created_at, updated_at) VALUES (?,?,?,?,?,?)"
+		createNewTransaction = "INSERT INTO transactions(from_user_id,from_user_email, to_user_id, to_user_email, type, amount,user_email) VALUES(?,?,?,?,?,?,?);"
+		addNewForumPost      = "INSERT INTO forums(title, description, author, slug) VALUES (?,?,?,?);"
 		getSingleForumPost   = "SELECT * FROM forums WHERE `slug` = ?;"
-		getAllForums         = "SELECT * FROM forums"
-		sendMessage          = "INSERT INTO chat_messages (sender, recipient, message, created_at,updated_at) VALUES (?,?,?,?,?)"
+		getAllForums         = "SELECT * FROM forums;"
+		sendMessage          = "INSERT INTO chat_messages (sender, recipient, message) VALUES (?,?,?);"
 		database             = &mysqlDatabase{}
 		err                  error
 	)
@@ -131,39 +130,42 @@ func (db *mysqlDatabase) GetBySessionKey(ctx context.Context, sessionkey string)
 func (db *mysqlDatabase) GetUserPortfolio(ctx context.Context, user_email string) (*[]model.PortfolioOrder, error) {
 	var portfolioOrders = []model.PortfolioOrder{}
 	var portfolioOrder = model.PortfolioOrder{}
-	getPortfolio, err := db.getUserPortfolios.QueryContext(ctx, user_email)
+	portfolioRows, err := db.getUserPortfolios.QueryContext(ctx, user_email)
 	if err != nil {
 		return nil, err
 	}
-	for getPortfolio.Next() {
-		err := getPortfolio.Scan(&portfolioOrder.Id, &portfolioOrder.Type, &portfolioOrder.Security, &portfolioOrder.Unit, &portfolioOrder.Status, &portfolioOrder.Cancelled, &portfolioOrder.UserID, &portfolioOrder.UserEmail, &portfolioOrder.CreatedAt, &portfolioOrder.UpdatedAt)
+	defer portfolioRows.Close()
+	for portfolioRows.Next() {
+		err := portfolioRows.Scan(&portfolioOrder.Id, &portfolioOrder.Type, &portfolioOrder.Security, &portfolioOrder.Unit, &portfolioOrder.Status, &portfolioOrder.Cancelled, &portfolioOrder.UserID, &portfolioOrder.UserEmail, &portfolioOrder.CreatedAt, &portfolioOrder.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
+		portfolioOrders = append(portfolioOrders, portfolioOrder) //append everything
 	}
-	portfolioOrders = append(portfolioOrders, portfolioOrder)
 	return &portfolioOrders, nil
 }
 
 func (db *mysqlDatabase) GetUserTransactions(ctx context.Context, user_email string) (*[]model.Transaction, error) {
 	var transaction = model.Transaction{}
 	var transactions = []model.Transaction{}
-	getTransactions, err := db.getUserTransactions.QueryContext(ctx, user_email)
+	transactionsRows, err := db.getUserTransactions.QueryContext(ctx, user_email)
 	if err != nil {
 		return nil, err
 	}
-	for getTransactions.Next() {
-		err := getTransactions.Scan(&transaction.Id, &transaction.FromUserID, &transaction.FromUserEmail, &transaction.ToUserID, &transaction.ToUserEmail, &transaction.TransactionType, &transaction.CreatedAt, &transaction.UpdatedAt, &transaction.Amount, &transaction.UserEmail)
+	defer transactionsRows.Close()
+	for transactionsRows.Next() {
+		err := transactionsRows.Scan(&transaction.Id, &transaction.FromUserID, &transaction.FromUserEmail, &transaction.ToUserID, &transaction.ToUserEmail, &transaction.TransactionType, &transaction.CreatedAt, &transaction.UpdatedAt, &transaction.Amount, &transaction.UserEmail)
 		if err != nil {
 			return nil, err
 		}
+		transactions = append(transactions, transaction)
 	}
-	transactions = append(transactions, transaction)
+
 	return &transactions, nil
 }
 
-func (db *mysqlDatabase) CreateNewTransaction(ctx context.Context, from_user int, from_user_email string, to_user int, to_user_email string, transactiontype string, created_at time.Time, updated_at time.Time, amount int, user_email string) (bool, error) {
-	createNewTx, err := db.createNewTransaction.ExecContext(ctx, from_user, from_user_email, to_user, to_user_email, transactiontype, created_at, updated_at, amount, user_email)
+func (db *mysqlDatabase) CreateNewTransaction(ctx context.Context, from_user int, from_user_email string, to_user int, to_user_email string, transactiontype string, amount int, user_email string) (bool, error) {
+	createNewTx, err := db.createNewTransaction.ExecContext(ctx, from_user, from_user_email, to_user, to_user_email, transactiontype, amount, user_email)
 	if err != nil {
 		return false, err
 	}
@@ -177,8 +179,8 @@ func (db *mysqlDatabase) CreateNewTransaction(ctx context.Context, from_user int
 	return true, nil
 }
 
-func (db *mysqlDatabase) AddNewForumPost(ctx context.Context, title string, description string, author string, slug string, created_at time.Time, updated_at time.Time) (bool, error) {
-	createNewForum, err := db.addNewForumPost.ExecContext(ctx, title, description, author, slug, created_at, updated_at)
+func (db *mysqlDatabase) AddNewForumPost(ctx context.Context, title string, description string, author string, slug string) (bool, error) {
+	createNewForum, err := db.addNewForumPost.ExecContext(ctx, title, description, author, slug)
 	if err != nil {
 		return false, err
 	}
@@ -192,8 +194,8 @@ func (db *mysqlDatabase) AddNewForumPost(ctx context.Context, title string, desc
 	return true, nil
 }
 
-func (db *mysqlDatabase) SendMessage(ctx context.Context, senderId int, receiverId int, message string, createdAt time.Time, updatedAt time.Time) (bool, error) {
-	sendmessage, err := db.sendMessage.ExecContext(ctx, senderId, receiverId, message, createdAt, updatedAt)
+func (db *mysqlDatabase) SendMessage(ctx context.Context, senderId int, receiverId int, message string) (bool, error) {
+	sendmessage, err := db.sendMessage.ExecContext(ctx, senderId, receiverId, message)
 	if err != nil {
 		return false, err
 	}
