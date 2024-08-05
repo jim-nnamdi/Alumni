@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/jim-nnamdi/jinx/pkg/database/mysql"
 )
@@ -51,7 +50,7 @@ func (fs *forumStruct) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	slug := strings.Split(title, " ")
 	_slug := strings.Join(slug, "")
 
-	add_new_forum_post, err := fs.Db.AddNewForumPost(r.Context(), title, description, author, _slug, time.Now(), time.Now())
+	add_new_forum_post, err := fs.Db.AddNewForumPost(r.Context(), title, description, author, _slug)
 	if err != nil {
 		fs.Log.Printf("'%s'\n", err)
 		afp["error"] = err.Error()

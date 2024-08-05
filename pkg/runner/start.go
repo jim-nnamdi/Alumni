@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/go-sql-driver/mysql"
 	database "github.com/jim-nnamdi/jinx/pkg/database/mysql"
@@ -61,7 +62,22 @@ func (runner *StartRunner) Run(c *cli.Context) error {
 		AllowNativePasswords: true,
 	}
 
-	if mysqlDbInstance, err = sql.Open("mysql", databaseConfig.FormatDSN()); err != nil {
+	const maxRetries = 3
+	const retryDelay = 2 * time.Second
+
+	for i := 0; i < maxRetries; i++ {
+		if mysqlDbInstance, err = sql.Open("mysql", databaseConfig.FormatDSN()); err == nil {
+			if err = mysqlDbInstance.Ping(); err == nil {
+				// Successfully connected
+				break
+			}
+		}
+		log.Printf("Failed to connect to MySQL database, attempt %d: %v", i+1, err)
+		time.Sleep(retryDelay)
+	}
+
+	if err != nil {
+		logger.Error("Error connecting to the database after multiple attempts", zap.Error(err))
 		return fmt.Errorf("unable to open connection to MySQL Server: %s", err.Error())
 	}
 
