@@ -95,6 +95,8 @@ func (runner *StartRunner) Run(c *cli.Context) error {
 		AllForumHandler:    handlers.NewAForumStruct(alog, mysqlDatabaseClient),
 		SingleForumHandler: handlers.NewSForumStruct(alog, mysqlDatabaseClient),
 		ChatHandler:        handlers.NewChat(alog, mysqlDatabaseClient),
+		Logger:             logger,
+		Mysqlclient:        mysqlDatabaseClient,
 	}
 	server.Start()
 	return nil
